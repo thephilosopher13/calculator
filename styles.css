@@ -1,0 +1,36 @@
+.container {
+    display: flex;
+    flex-direction: column;
+}
+
+.container .display {
+    background-color: gray;
+    width: 418px;
+    height: 100px;
+    border-radius: 5px;
+    margin-bottom: 5px;
+    border: 1px solid black;
+}
+
+.container .buttonContainer {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(5,auto);
+    grid-gap: 5px;
+    justify-items: center;
+    align-items: center;
+    height: 525px;
+    width: 420px;
+
+}
+
+.container .buttonContainer button {
+    height: 100px;
+    width: 100px;
+    border-radius: 5px;
+}
+
+.container .buttonContainer [id="0"] {
+    grid-column: span 2;
+    width: 205px;
+}
