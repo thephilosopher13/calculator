@@ -14,12 +14,14 @@ const clearButton = document.getElementById('clear');
 const numberButtons = document.querySelectorAll('.number');
 const basicOperationButtons = document.querySelectorAll('.basicOperation');
 const allButtons = document.querySelectorAll('button');
-const equalsButton = document.getElementById('equals')
+const equalsButton = document.getElementById('equals');
+const backspaceButton = document.getElementById('backspace');
+const negativeButton = document.getElementById('plusminus');
 let operatorArray = []; // empty array to store first number, operator and second array
 let displayNumber = "0";
 let justOperated = false;
-let percentButton = document.getElementById('percent')
-let noValuePutAfterFirstOperationButton = false // exists to make one number add/subtract/divide/multiply to itself if you press equals after pressing an operation w/o typing anything else
+let percentButton = document.getElementById('percent');
+let noValuePutAfterFirstOperationButton = false; // exists to make one number add/subtract/divide/multiply to itself if you press equals after pressing an operation w/o typing anything else
 function handleClick(event) {
     let clickedItemId = event.target.id;
     console.log(clickedItemId);
@@ -36,20 +38,17 @@ const operatorsConverterFromString = {
 const numberSlicer = (number) => {
     const numberString = number.toString();
     const slicedNumber = numberString.slice(0,9);
-    const fixedNumber = Number(slicedNumber);
-    return fixedNumber
+    return slicedNumber
 };
 
 const overflowCheck = (n) => {
     const integer = Number(n);
-    if (integer > 999999999 || (integer < 0.00000001 && n >=0) || integer < -999999999 || (integer < 0 && integer > 0.00000001)) {
+    if (integer > 999999999 || (integer < 0.00000001 && n >0) || integer < -999999999 || (integer < 0 && integer > 0.00000001)) {
         return true;
     } else {
         return false;
     }
 }
-
-
 
 function updateDisplay() {
     display.textContent = displayNumber
@@ -168,24 +167,29 @@ equalsButton.addEventListener('click', () => {
     updateDisplay();
 });
 
-percentButton.addEventListener('click', () => {
-    let numberToPercent = parseFloat(displayNumber);
-    let percentedNumber = operate(numberToPercent, 100, 'divide');
-    let percentedNumberButString = percentedNumber.toString();
-    justOperated = false;
-    noValuePutAfterFirstOperationButton = false;
-    if (overflowCheck(percentedNumber) === true) {
-        operatorArray.length = 0;
-        displayNumber = "0";
+backspaceButton.addEventListener('click', () => {
+    let backspacedNumber
+    if (justOperated === true || noValuePutAfterFirstOperationButton === true) {
+        alert("Can't backspace now!")
         updateDisplay();
-        return alert("Overflow Error!");
-    } else {
+        return
+    } else if (displayNumber.length >= 2) {
+        backspacedNumber = displayNumber.slice(0, -1);updateDisplay();
         updateDisplay();
-        displayNumber = percentedNumberButString;
+        return
     }
+    displayNumber = backspacedNumber;
     updateDisplay();
 })
 
+negativeButton.addEventListener('click', () => {
+    negativeDisplayNumber = (-(Number(displayNumber))).toString();
+    displayNumber = negativeDisplayNumber;
+    if (typeof operatorArray[0] !== 'undefined' && operatorArray.length === 1) {
+        operatorArray[0] *= -1;
+    }
+    updateDisplay();
+})
 
 allButtons.forEach(button =>
     button.addEventListener('click', () => { 
