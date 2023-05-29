@@ -20,6 +20,7 @@ const negativeButton = document.getElementById('plusminus');
 let operatorArray = []; // empty array to store first number, operator and second array
 let displayNumber = "0";
 let justOperated = false;
+let overflowErrorFlag = false;
 let percentButton = document.getElementById('percent');
 let noValuePutAfterFirstOperationButton = false; // exists to make one number add/subtract/divide/multiply to itself if you press equals after pressing an operation w/o typing anything else
 function handleClick(event) {
@@ -37,8 +38,10 @@ const operatorsConverterFromString = {
 // below function exists to convert a number to a 9-digit item
 const numberSlicer = (number) => {
     const numberString = number.toString();
-    const slicedNumber = numberString.slice(0,9);
-    return slicedNumber
+    const numberWithoutTrailingZeros = numberString.replace(/\.?0+$/, "");
+    const slicedNumber = numberWithoutTrailingZeros.slice(0,9);
+    const finalNumber = (Number(slicedNumber).toString())
+    return finalNumber
 };
 
 const overflowCheck = (n) => {
@@ -50,16 +53,35 @@ const overflowCheck = (n) => {
     }
 }
 
+const overflowReset = () => {
+    justOperated = false;
+    noValuePutAfterFirstOperationButton = false
+    overflowErrorFlag = false;
+    displayNumber = "0";
+    operatorArray.length = 0;
+    return alert("Overflow Error!")
+}
+
 function updateDisplay() {
     display.textContent = displayNumber
 };
 
 const operate = (a, b, operator) => {
     let calculationResult = operatorsConverterFromString[operator](a,b);
-    let calculationResultRounded = parseFloat(calculationResult.toFixed(9));
-    let calculationResultFixed = numberSlicer(calculationResultRounded);
-    justOperated = true;
-    return calculationResultFixed;
+    if (overflowCheck(calculationResult) === true) {
+        calculationResultFixed = 0;
+        overflowErrorFlag = true
+        return calculationResultFixed;
+    } else if (b === 0 && operator === 'divide') {
+        calculationResultFixed = 0;
+        overflowReset()
+        return calculationResultFixed;
+    } else {
+        let calculationResultRounded = (parseFloat(calculationResult).toFixed(9));
+        let calculationResultFixed = numberSlicer(calculationResultRounded);
+        justOperated = true;
+        return calculationResultFixed;
+    }
 };
 
 
@@ -69,8 +91,13 @@ numberButtons.forEach(button => {
         const getDisplayNumber = displayNumber;
         const containsDecimal = displayNumber.toString().includes(".")
         if (displayNumber.length == 9) {
-            noValuePutAfterFirstOperationButton = false;
-            return alert("Digit length of 9 reached!");
+            if (noValuePutAfterFirstOperationButton === true) {
+                justOperated = false 
+                noValuePutAfterFirstOperationButton = false
+                displayNumber = buttonNumber
+            } else {
+                return alert("Digit length of 9 reached!");
+            }
         } else if (containsDecimal === true && buttonNumber ===".") {
             noValuePutAfterFirstOperationButton = false;
             return alert("Already put a decimal, can't put another one!");
@@ -118,12 +145,10 @@ basicOperationButtons.forEach(button => {
             operatorArray.push(parseFloat(displayNumber));
             let operatorResult = operate(operatorArray[0], operatorArray[2], operatorArray[1]);
             operatorArray.length = 0;
-            if (overflowCheck(operatorResult) === true ) {
-                justOperated = false
-                displayNumber = "0"
-                return alert("Overflow Error!")
+            if (overflowErrorFlag === true ) {
+                overflowReset();
             } else {
-                operatorArray.push(operatorResult);
+                operatorArray.push(parseFloat(operatorResult));
                 operatorArray.push(basicOperation);
                 displayNumber = operatorResult;
             }
@@ -143,24 +168,20 @@ equalsButton.addEventListener('click', () => {
     } else if (operatorArray.length === 2 && noValuePutAfterFirstOperationButton === true) {
         let operatorResult = operate(operatorArray[0], operatorArray[0], operatorArray[1]);
         operatorArray.length = 0;
-        if (overflowCheck(operatorResult) === true ) {
-            justOperated = false
-            displayNumber = "0"
-            return alert("Overflow Error!")
+        if (overflowErrorFlag === true) {
+            overflowReset();
         } else {
-            operatorArray.push(operatorResult);
+            operatorArray.push(parseFloat(operatorResult));
             displayNumber = operatorResult;
         }
     } else if (operatorArray.length === 2 && noValuePutAfterFirstOperationButton === false) {
         operatorArray.push(parseFloat(displayNumber));
         operatorResult = operate(operatorArray[0], operatorArray[2], operatorArray[1]);
         operatorArray.length = 0;
-        if (overflowCheck(operatorResult) === true ) {
-            justOperated = false
-            displayNumber = "0"
-            return alert("Overflow Error!")
+        if (overflowErrorFlag === true) {
+            overflowReset();
         } else {
-            operatorArray.push(operatorResult);
+            operatorArray.push(parseFloat(operatorResult));
             displayNumber = operatorResult;
         }
     }
